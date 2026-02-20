@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   title: "TradeWise - Smart Intraday Trading for Indian Stocks",
   description:
     "Track your intraday trades, get AI-powered suggestions, and never miss a loss alert. Built for Indian stock markets.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
