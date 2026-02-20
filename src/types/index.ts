@@ -106,6 +106,53 @@ export interface TradingGoalData {
   endDate: string;
 }
 
+// Stock Holdings types
+export interface StockHoldingData {
+  symbol: string;
+  exchange: string;
+  quantity: number;
+  buyPrice: number;
+  buyDate: string;
+  notes?: string;
+}
+
+export interface StockHoldingWithLive extends StockHoldingData {
+  id: string;
+  currentPrice: number;
+  unrealizedPnl: number;
+  unrealizedPnlPct: number;
+  investedValue: number;
+  currentValue: number;
+}
+
+// Mutual Fund types
+export interface MutualFundData {
+  schemeName: string;
+  schemeCode: string;
+  folioNumber?: string;
+  units: number;
+  investedAmount: number;
+  category?: string;
+  isSip: boolean;
+  sipAmount?: number;
+  sipDate?: number;
+  notes?: string;
+}
+
+export interface MutualFundWithLive extends MutualFundData {
+  id: string;
+  currentNav: number;
+  currentValue: number;
+  unrealizedPnl: number;
+  unrealizedPnlPct: number;
+  createdAt: string;
+}
+
+export interface MfSearchResult {
+  schemeCode: string;
+  schemeName: string;
+}
+
 export interface RiskCalculation {
   positionSize: number;
   capitalRequired: number;

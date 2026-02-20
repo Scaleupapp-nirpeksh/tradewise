@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/table";
 import { formatINR } from "@/lib/charges";
 import { SuggestionQuestionnaire, SuggestionPreferences } from "@/components/ai-buddy/suggestion-questionnaire";
+import { PortfolioInsights } from "@/components/ai-buddy/portfolio-insights";
 
 interface Suggestion {
   id: string;
@@ -118,6 +119,7 @@ export default function SuggestionsPage() {
   const [cooldownEnd, setCooldownEnd] = useState<number>(0);
   const [cooldownLeft, setCooldownLeft] = useState("");
   const [tab, setTab] = useState("active");
+  const [pageTab, setPageTab] = useState("ideas");
 
   // Questionnaire state
   const [prefs, setPrefs] = useState<SuggestionPreferences | null>(null);
@@ -277,53 +279,61 @@ export default function SuggestionsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Brain className="h-6 w-6 text-violet-600" />
-            AI Suggestions
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            Trade ideas powered by AI analysis of market data.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowQuestionnaire(true)}
-            className="text-xs"
-          >
-            <Settings2 className="h-3.5 w-3.5 mr-1" />
-            Preferences
-          </Button>
-          {isCooldown && cooldownLeft && (
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              Next ideas in {cooldownLeft}
-            </span>
-          )}
-          <Button
-            onClick={handleGenerate}
-            disabled={generating || isCooldown}
-            className="bg-violet-600 hover:bg-violet-700"
-          >
-            <RefreshCw
-              className={`h-4 w-4 mr-2 ${generating ? "animate-spin" : ""}`}
-            />
-            {generating ? "Analyzing..." : "Get New Ideas"}
-          </Button>
-        </div>
-      </div>
-
-      <div className="bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-900 rounded-lg p-3">
-        <p className="text-xs text-amber-800 dark:text-amber-400">
-          <strong>Disclaimer:</strong> AI-generated ideas, not financial advice.
-          Always verify with your own analysis.
+      <div>
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <Brain className="h-6 w-6 text-violet-600" />
+          AI Suggestions
+        </h1>
+        <p className="text-muted-foreground text-sm">
+          Trade ideas and portfolio insights powered by AI.
         </p>
       </div>
 
-      <Tabs value={tab} onValueChange={setTab}>
+      <Tabs value={pageTab} onValueChange={setPageTab}>
+        <TabsList>
+          <TabsTrigger value="ideas">Trade Ideas</TabsTrigger>
+          <TabsTrigger value="insights">Portfolio Insights</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="ideas" className="mt-4 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowQuestionnaire(true)}
+                className="text-xs"
+              >
+                <Settings2 className="h-3.5 w-3.5 mr-1" />
+                Preferences
+              </Button>
+              {isCooldown && cooldownLeft && (
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  Next ideas in {cooldownLeft}
+                </span>
+              )}
+              <Button
+                onClick={handleGenerate}
+                disabled={generating || isCooldown}
+                className="bg-violet-600 hover:bg-violet-700"
+              >
+                <RefreshCw
+                  className={`h-4 w-4 mr-2 ${generating ? "animate-spin" : ""}`}
+                />
+                {generating ? "Analyzing..." : "Get New Ideas"}
+              </Button>
+            </div>
+          </div>
+
+          <div className="bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-900 rounded-lg p-3">
+            <p className="text-xs text-amber-800 dark:text-amber-400">
+              <strong>Disclaimer:</strong> AI-generated ideas, not financial advice.
+              Always verify with your own analysis.
+            </p>
+          </div>
+
+          <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="active">
             Active{active.length > 0 ? ` (${active.length})` : ""}
@@ -541,6 +551,12 @@ export default function SuggestionsPage() {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+          </Tabs>
+        </TabsContent>
+
+        <TabsContent value="insights" className="mt-4">
+          <PortfolioInsights />
         </TabsContent>
       </Tabs>
     </div>

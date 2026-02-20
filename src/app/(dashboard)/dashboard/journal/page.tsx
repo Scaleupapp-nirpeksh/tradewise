@@ -5,7 +5,14 @@ import { BookOpen, Brain } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { formatINR } from "@/lib/charges";
+import { PortfolioActivity } from "@/components/journal/portfolio-activity";
 
 interface Trade {
   id: string;
@@ -76,60 +83,68 @@ export default function JournalPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <BookOpen className="h-6 w-6 text-amber-600" />
-            Trade Journal
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            Review your trades and learn from your patterns
-          </p>
-        </div>
-        <Button
-          onClick={handleAiReview}
-          disabled={reviewing || trades.length === 0}
-          variant="outline"
-          className="border-violet-300 text-violet-700"
-        >
-          <Brain className={`h-4 w-4 mr-2 ${reviewing ? "animate-pulse" : ""}`} />
-          {reviewing ? "Analyzing..." : "AI Review"}
-        </Button>
+      <div>
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <BookOpen className="h-6 w-6 text-amber-600" />
+          Journal
+        </h1>
+        <p className="text-muted-foreground text-sm">
+          Review your trades and investment decisions
+        </p>
       </div>
 
-      {/* AI Review */}
-      {aiReview && (
-        <Card className="border-violet-200 bg-violet-50/50">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Brain className="h-5 w-5 text-violet-600" />
-              AI Trading Review
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="whitespace-pre-line text-sm">{aiReview}</div>
-          </CardContent>
-        </Card>
-      )}
+      <Tabs defaultValue="trades">
+        <TabsList>
+          <TabsTrigger value="trades">Trade Journal</TabsTrigger>
+          <TabsTrigger value="portfolio">Portfolio Activity</TabsTrigger>
+        </TabsList>
 
-      {loading ? (
-        <div className="text-center py-12 text-muted-foreground">
-          Loading journal...
-        </div>
-      ) : trades.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <BookOpen className="h-12 w-12 text-amber-300 mx-auto mb-4" />
-            <h3 className="font-semibold text-lg mb-2">
-              Your journal is empty
-            </h3>
-            <p className="text-muted-foreground">
-              Close some trades to see them here with your notes and emotions.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        Object.entries(tradesByDate).map(([date, dayTrades]) => {
+        <TabsContent value="trades" className="mt-4 space-y-6">
+          <div className="flex justify-end">
+            <Button
+              onClick={handleAiReview}
+              disabled={reviewing || trades.length === 0}
+              variant="outline"
+              className="border-violet-300 text-violet-700"
+            >
+              <Brain className={`h-4 w-4 mr-2 ${reviewing ? "animate-pulse" : ""}`} />
+              {reviewing ? "Analyzing..." : "AI Review"}
+            </Button>
+          </div>
+
+          {/* AI Review */}
+          {aiReview && (
+            <Card className="border-violet-200 bg-violet-50/50">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-violet-600" />
+                  AI Trading Review
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="whitespace-pre-line text-sm">{aiReview}</div>
+              </CardContent>
+            </Card>
+          )}
+
+          {loading ? (
+            <div className="text-center py-12 text-muted-foreground">
+              Loading journal...
+            </div>
+          ) : trades.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <BookOpen className="h-12 w-12 text-amber-300 mx-auto mb-4" />
+                <h3 className="font-semibold text-lg mb-2">
+                  Your journal is empty
+                </h3>
+                <p className="text-muted-foreground">
+                  Close some trades to see them here with your notes and emotions.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            Object.entries(tradesByDate).map(([date, dayTrades]) => {
           const dayPnl = dayTrades.reduce(
             (sum, t) => sum + (t.netPnl || 0),
             0
@@ -200,6 +215,12 @@ export default function JournalPage() {
           );
         })
       )}
+        </TabsContent>
+
+        <TabsContent value="portfolio" className="mt-4">
+          <PortfolioActivity />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

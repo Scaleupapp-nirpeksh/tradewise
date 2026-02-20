@@ -11,6 +11,10 @@ import { GettingStarted } from "@/components/guidance/getting-started";
 import { NextAction } from "@/components/guidance/next-action";
 import { GoalProgressSummary } from "@/components/dashboard/goal-progress-summary";
 import { DailyTip } from "@/components/ai-buddy/daily-tip";
+import { NetWorthCard } from "@/components/dashboard/net-worth-card";
+import { LiveHoldings } from "@/components/dashboard/live-holdings";
+import { MfSnapshot } from "@/components/dashboard/mf-snapshot";
+import { PortfolioHealthCard } from "@/components/dashboard/portfolio-health-card";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -39,7 +43,7 @@ export default async function DashboardPage() {
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  const [todayTrades, allOpenTrades, recentTrades, latestSuggestion, goals] =
+  const [todayTrades, allOpenTrades, recentTrades, latestSuggestion, goals, holdingsCount, fundsCount] =
     await Promise.all([
       prisma.trade.findMany({
         where: { userId, createdAt: { gte: today, lt: tomorrow } },
@@ -63,6 +67,8 @@ export default async function DashboardPage() {
         take: 3,
         orderBy: { createdAt: "desc" },
       }),
+      prisma.stockHolding.count({ where: { userId } }),
+      prisma.mutualFund.count({ where: { userId } }),
     ]);
 
   // Calculate today's stats
@@ -79,6 +85,8 @@ export default async function DashboardPage() {
     (typeof user.guidanceProgress === "object" &&
       !(user.guidanceProgress as Record<string, boolean>).dismissed);
 
+  const hasPortfolio = holdingsCount > 0 || fundsCount > 0;
+
   return (
     <div className="space-y-6">
       {/* Welcome Header + What to Do Next */}
@@ -88,16 +96,25 @@ export default async function DashboardPage() {
             Welcome back, {user.name?.split(" ")[0] || "Trader"}!
           </h1>
           <p className="text-muted-foreground">
-            Here&apos;s how your trading day looks.
+            Here&apos;s your complete financial overview.
           </p>
         </div>
         <NextAction />
         <DailyTip />
       </div>
 
-      {/* Top Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Row 1: Net Worth + Today's P&L */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <NetWorthCard
+          capitalAmount={user.capitalAmount || 0}
+          holdingsCount={holdingsCount}
+          fundsCount={fundsCount}
+        />
         <DailyPnlCard pnl={todayPnl} />
+      </div>
+
+      {/* Row 2: Quick Glance Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <QuickStats
           label="Trades Today"
           value={closedToday.length.toString()}
@@ -117,16 +134,32 @@ export default async function DashboardPage() {
         <QuickStats
           label="Open Positions"
           value={allOpenTrades.length.toString()}
-          subtitle="Live tracking below"
+          subtitle={allOpenTrades.length > 0 ? "Live tracking below" : "None right now"}
           color="amber"
+        />
+        <QuickStats
+          label="Portfolio"
+          value={`${holdingsCount + fundsCount}`}
+          subtitle={
+            hasPortfolio
+              ? `${holdingsCount} stocks, ${fundsCount} funds`
+              : "No investments yet"
+          }
+          color="emerald"
         />
       </div>
 
       {/* Getting Started Guide (new users) */}
       {isNewUser && <GettingStarted />}
 
-      {/* Open Positions - live client component */}
+      {/* Open Positions - live intraday tracking */}
       {allOpenTrades.length > 0 && <OpenPositions />}
+
+      {/* Live Stock Holdings with prices */}
+      {holdingsCount > 0 && <LiveHoldings />}
+
+      {/* Mutual Funds Snapshot with NAVs */}
+      {fundsCount > 0 && <MfSnapshot />}
 
       {/* Goal Progress */}
       {goals.length > 0 && (
@@ -146,7 +179,8 @@ export default async function DashboardPage() {
         <div className="lg:col-span-2">
           <RecentTrades trades={recentTrades} />
         </div>
-        <div>
+        <div className="space-y-6">
+          {hasPortfolio && <PortfolioHealthCard />}
           <AiSuggestionCard suggestion={latestSuggestion} />
         </div>
       </div>

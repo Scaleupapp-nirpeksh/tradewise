@@ -66,6 +66,64 @@ export function calculateCharges(
   };
 }
 
+// Delivery (stock holdings) trading charges — different STT & stamp duty rates
+export function calculateDeliveryCharges(
+  buyPrice: number,
+  sellPrice: number,
+  quantity: number,
+  exchange: string = "NSE",
+  chargeProfile: BrokerChargeProfile = DEFAULT_CHARGE_PROFILE
+): ChargeBreakdown {
+  const buyTurnover = buyPrice * quantity;
+  const sellTurnover = sellPrice * quantity;
+  const totalTurnover = buyTurnover + sellTurnover;
+
+  // 1. Brokerage (same as intraday)
+  let brokerage: number;
+  if (chargeProfile.type === "flat") {
+    brokerage = chargeProfile.flatFee * 2;
+  } else {
+    const buyBrokerage = Math.min(
+      (buyTurnover * chargeProfile.percentage) / 100,
+      chargeProfile.maxBrokerage
+    );
+    const sellBrokerage = Math.min(
+      (sellTurnover * chargeProfile.percentage) / 100,
+      chargeProfile.maxBrokerage
+    );
+    brokerage = buyBrokerage + sellBrokerage;
+  }
+
+  // 2. STT — 0.1% on BOTH buy and sell for delivery
+  const stt = (totalTurnover * 0.1) / 100;
+
+  // 3. Exchange Transaction Charges (same)
+  const exchangeRate = exchange === "BSE" ? 0.00375 : 0.00297;
+  const exchangeCharges = (totalTurnover * exchangeRate) / 100;
+
+  // 4. GST — 18% on (brokerage + exchange charges)
+  const gst = ((brokerage + exchangeCharges) * 18) / 100;
+
+  // 5. SEBI Charges — Rs 10 per crore of turnover
+  const sebiCharges = (totalTurnover * 10) / 10000000;
+
+  // 6. Stamp Duty — 0.015% on buy side for delivery
+  const stampDuty = (buyTurnover * 0.015) / 100;
+
+  const totalCharges =
+    brokerage + stt + exchangeCharges + gst + sebiCharges + stampDuty;
+
+  return {
+    brokerage: Math.round(brokerage * 100) / 100,
+    stt: Math.round(stt * 100) / 100,
+    exchangeCharges: Math.round(exchangeCharges * 100) / 100,
+    gst: Math.round(gst * 100) / 100,
+    sebiCharges: Math.round(sebiCharges * 100) / 100,
+    stampDuty: Math.round(stampDuty * 100) / 100,
+    totalCharges: Math.round(totalCharges * 100) / 100,
+  };
+}
+
 export function calculateGrossPnl(
   side: "BUY" | "SELL",
   entryPrice: number,

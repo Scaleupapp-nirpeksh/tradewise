@@ -35,7 +35,7 @@ const GOAL_TYPES: Record<string, { label: string; unit: string; description: str
   NET_PNL: {
     label: "Net P&L Target",
     unit: "₹",
-    description: "Target profit amount for the period",
+    description: "Target profit amount from intraday trades for the period",
   },
   WIN_RATE: {
     label: "Win Rate Target",
@@ -51,6 +51,16 @@ const GOAL_TYPES: Record<string, { label: string; unit: string; description: str
     label: "Max Loss Per Trade",
     unit: "₹",
     description: "Keep individual trade losses below this amount",
+  },
+  PORTFOLIO_VALUE: {
+    label: "Portfolio Value Target",
+    unit: "₹",
+    description: "Grow your total portfolio (stocks + mutual funds) to this value",
+  },
+  MONTHLY_INVESTMENT: {
+    label: "Monthly Investment Target",
+    unit: "₹",
+    description: "Invest at least this much every month in stocks or mutual funds",
   },
 };
 
@@ -95,9 +105,13 @@ export default function GoalsPage() {
       startDate.setHours(0, 0, 0, 0);
       endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + 7);
-    } else {
+    } else if (form.period === "MONTHLY") {
       startDate = new Date(now.getFullYear(), now.getMonth(), 1);
       endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    } else {
+      // YEARLY
+      startDate = new Date(now.getFullYear(), 0, 1);
+      endDate = new Date(now.getFullYear() + 1, 0, 1);
     }
 
     await fetch("/api/goals", {
@@ -159,10 +173,10 @@ export default function GoalsPage() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Target className="h-6 w-6 text-gray-600" />
-            Trading Goals
+            Goals
           </h1>
           <p className="text-muted-foreground text-sm">
-            Set targets and track your progress
+            Set targets for your trading and investments, and track your progress
           </p>
         </div>
         <Button
@@ -216,6 +230,7 @@ export default function GoalsPage() {
                     <SelectItem value="DAILY">Daily</SelectItem>
                     <SelectItem value="WEEKLY">Weekly</SelectItem>
                     <SelectItem value="MONTHLY">Monthly</SelectItem>
+                    <SelectItem value="YEARLY">Yearly</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -237,6 +252,10 @@ export default function GoalsPage() {
                         "How many trades do you want to complete?"}
                       {form.type === "MAX_LOSS_PER_TRADE" &&
                         "What's the maximum you'll allow yourself to lose on any single trade?"}
+                      {form.type === "PORTFOLIO_VALUE" &&
+                        "What total value do you want your stocks + mutual funds to reach?"}
+                      {form.type === "MONTHLY_INVESTMENT" &&
+                        "How much do you want to invest every month in stocks or mutual funds?"}
                     </p>
                   </TooltipContent>
                 </Tooltip>

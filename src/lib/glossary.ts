@@ -43,6 +43,40 @@ export const GLOSSARY: Record<string, string> = {
     "How certain the AI is about its suggestion. HIGH means very confident, LOW means it's less sure.",
   Holdings:
     "Stocks you currently own and haven't sold yet. These are your open positions.",
+  "Stock Holdings":
+    "Stocks you bought and plan to hold for days, weeks, or years. Unlike intraday, you don't sell on the same day.",
+  "Delivery Trading":
+    "When you buy a stock and keep it beyond the trading day. The stock is 'delivered' to your demat account.",
+  "Average Buy Price":
+    "If you bought a stock in multiple batches at different prices, this is the weighted average of all your purchases.",
+  Portfolio:
+    "Your collection of all investments — stocks, mutual funds, and intraday trades combined.",
+  "Mutual Fund":
+    "A pool of money collected from many investors, managed by professionals who invest it in stocks, bonds, or other assets.",
+  "NAV (Net Asset Value)":
+    "The price of one unit of a mutual fund. It changes daily based on how the fund's investments perform.",
+  "SIP (Systematic Investment Plan)":
+    "Investing a fixed amount in a mutual fund every month automatically. Great for building wealth slowly over time.",
+  Units:
+    "When you invest in a mutual fund, you get 'units' based on the NAV. More units = more investment.",
+  XIRR:
+    "A way to measure your actual returns accounting for when you invested. More accurate than simple percentage returns.",
+  ELSS:
+    "Equity Linked Savings Scheme — a type of mutual fund that saves you tax (up to ₹1.5 lakh under Section 80C) but locks your money for 3 years.",
+  "Expense Ratio":
+    "The annual fee a mutual fund charges for managing your money. Lower is better — usually 0.5% to 2.5%.",
+  "Folio Number":
+    "A unique ID for your mutual fund investment. Like a bank account number, but for your fund.",
+  "Equity Fund":
+    "A mutual fund that invests mainly in stocks. Higher risk but potentially higher returns over the long term.",
+  "Debt Fund":
+    "A mutual fund that invests in bonds and fixed-income securities. Lower risk, steadier returns.",
+  "Hybrid Fund":
+    "A mutual fund that invests in both stocks and bonds. A middle ground between equity and debt funds.",
+  "LTCG (Long Term Capital Gains)":
+    "Tax on profits from selling stocks/equity funds held for more than 1 year. Currently 10% above ₹1 lakh.",
+  "STCG (Short Term Capital Gains)":
+    "Tax on profits from selling stocks/equity funds held for less than 1 year. Currently 15%.",
 };
 
 export function getDefinition(term: string): string | undefined {

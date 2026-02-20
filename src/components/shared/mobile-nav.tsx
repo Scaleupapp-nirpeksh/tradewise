@@ -7,11 +7,13 @@ import {
   BarChart3,
   BookOpen,
   Brain,
+  Briefcase,
   Calculator,
   FileUp,
   Home,
   LogOut,
   Menu,
+  PiggyBank,
   Plus,
   Settings,
   Target,
@@ -24,18 +26,57 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { useState } from "react";
+import { LucideIcon } from "lucide-react";
 
-const navItems = [
-  { href: "/dashboard", icon: Home, label: "Dashboard" },
-  { href: "/dashboard/trades", icon: ListOrdered, label: "My Trades" },
-  { href: "/dashboard/trades/new", icon: Plus, label: "Add Trade" },
-  { href: "/dashboard/suggestions", icon: Brain, label: "AI Suggestions" },
-  { href: "/dashboard/analytics", icon: BarChart3, label: "Analytics" },
-  { href: "/dashboard/journal", icon: BookOpen, label: "Journal" },
-  { href: "/dashboard/calculator", icon: Calculator, label: "Risk Calculator" },
-  { href: "/dashboard/goals", icon: Target, label: "Goals" },
-  { href: "/dashboard/import", icon: FileUp, label: "Import Trades" },
-  { href: "/dashboard/settings", icon: Settings, label: "Settings" },
+interface NavItem {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+}
+
+interface NavGroup {
+  label: string | null;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    label: null,
+    items: [{ href: "/dashboard", icon: Home, label: "Dashboard" }],
+  },
+  {
+    label: "Intraday",
+    items: [
+      { href: "/dashboard/trades", icon: ListOrdered, label: "My Trades" },
+      { href: "/dashboard/trades/new", icon: Plus, label: "Add Trade" },
+    ],
+  },
+  {
+    label: "Stocks",
+    items: [
+      { href: "/dashboard/stocks", icon: Briefcase, label: "My Holdings" },
+      { href: "/dashboard/stocks/add", icon: Plus, label: "Add Holding" },
+    ],
+  },
+  {
+    label: "Mutual Funds",
+    items: [
+      { href: "/dashboard/mutual-funds", icon: PiggyBank, label: "My Funds" },
+      { href: "/dashboard/mutual-funds/add", icon: Plus, label: "Add Fund" },
+    ],
+  },
+  {
+    label: "Tools",
+    items: [
+      { href: "/dashboard/suggestions", icon: Brain, label: "AI Suggestions" },
+      { href: "/dashboard/analytics", icon: BarChart3, label: "Analytics" },
+      { href: "/dashboard/journal", icon: BookOpen, label: "Journal" },
+      { href: "/dashboard/calculator", icon: Calculator, label: "Risk Calculator" },
+      { href: "/dashboard/goals", icon: Target, label: "Goals" },
+      { href: "/dashboard/import", icon: FileUp, label: "Import" },
+      { href: "/dashboard/settings", icon: Settings, label: "Settings" },
+    ],
+  },
 ];
 
 export function MobileNav() {
@@ -68,28 +109,38 @@ export function MobileNav() {
                 </div>
                 <span className="text-lg font-bold">TradeWise</span>
               </div>
-              <nav className="px-3 py-4 space-y-1">
-                {navItems.map((item) => {
-                  const isActive =
-                    pathname === item.href ||
-                    (item.href !== "/dashboard" && pathname.startsWith(item.href));
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                        isActive
-                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400"
-                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                      )}
-                    >
-                      <item.icon className="h-5 w-5" />
-                      {item.label}
-                    </Link>
-                  );
-                })}
+              <nav className="px-3 py-4 space-y-1 overflow-y-auto max-h-[calc(100vh-180px)]">
+                {navGroups.map((group, gi) => (
+                  <div key={gi}>
+                    {group.label && (
+                      <p className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                        {group.label}
+                      </p>
+                    )}
+                    {group.items.map((item) => {
+                      const isActive =
+                        pathname === item.href ||
+                        (item.href !== "/dashboard" &&
+                          pathname.startsWith(item.href));
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setOpen(false)}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                            isActive
+                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400"
+                              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                          )}
+                        >
+                          <item.icon className="h-5 w-5" />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ))}
               </nav>
               <div className="px-3 py-4 border-t">
                 <Button

@@ -54,6 +54,40 @@ export async function GET() {
             .map((t) => Math.abs(t.netPnl || 0));
           currentValue = losses.length > 0 ? Math.max(...losses) : 0;
           break;
+        case "PORTFOLIO_VALUE": {
+          const [pvHoldings, pvFunds] = await Promise.all([
+            prisma.stockHolding.findMany({
+              where: { userId },
+              select: { quantity: true, currentPrice: true },
+            }),
+            prisma.mutualFund.findMany({
+              where: { userId },
+              select: { units: true, currentNav: true },
+            }),
+          ]);
+          currentValue =
+            pvHoldings.reduce((sum, h) => sum + h.quantity * h.currentPrice, 0) +
+            pvFunds.reduce((sum, f) => sum + f.units * f.currentNav, 0);
+          break;
+        }
+        case "MONTHLY_INVESTMENT": {
+          const monthStart = new Date(today);
+          monthStart.setDate(1);
+          const [miHoldings, miFunds] = await Promise.all([
+            prisma.stockHolding.findMany({
+              where: { userId, createdAt: { gte: monthStart } },
+              select: { quantity: true, buyPrice: true },
+            }),
+            prisma.mutualFund.findMany({
+              where: { userId, createdAt: { gte: monthStart } },
+              select: { investedAmount: true },
+            }),
+          ]);
+          currentValue =
+            miHoldings.reduce((sum, h) => sum + h.quantity * h.buyPrice, 0) +
+            miFunds.reduce((sum, f) => sum + f.investedAmount, 0);
+          break;
+        }
       }
 
       // Update currentValue in DB

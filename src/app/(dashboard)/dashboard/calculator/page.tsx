@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Calculator } from "lucide-react";
+import { Calculator, PiggyBank } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function CalculatorPage() {
   // Position Size Calculator
@@ -21,6 +22,15 @@ export default function CalculatorPage() {
     targetPrice: "",
     stopLossPrice: "",
     quantity: "",
+  });
+
+  // SIP / Lumpsum Calculator
+  const [sipMode, setSipMode] = useState<"sip" | "lumpsum">("sip");
+  const [sipForm, setSipForm] = useState({
+    monthlyAmount: "5000",
+    lumpsumAmount: "100000",
+    returnRate: "12",
+    years: "10",
   });
 
   const posResult = useMemo(() => {
@@ -67,6 +77,43 @@ export default function CalculatorPage() {
     };
   }, [rrForm]);
 
+  const sipResult = useMemo(() => {
+    const rate = parseFloat(sipForm.returnRate) || 0;
+    const years = parseFloat(sipForm.years) || 0;
+    if (rate <= 0 || years <= 0) return null;
+
+    if (sipMode === "sip") {
+      const monthly = parseFloat(sipForm.monthlyAmount) || 0;
+      if (monthly <= 0) return null;
+
+      const monthlyRate = rate / 100 / 12;
+      const months = years * 12;
+      const totalInvested = monthly * months;
+      // FV = P × [((1 + r)^n - 1) / r] × (1 + r)
+      const futureValue =
+        monthly *
+        ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) *
+        (1 + monthlyRate);
+
+      return {
+        totalInvested,
+        futureValue: Math.round(futureValue),
+        wealthGained: Math.round(futureValue - totalInvested),
+      };
+    } else {
+      const lumpsum = parseFloat(sipForm.lumpsumAmount) || 0;
+      if (lumpsum <= 0) return null;
+
+      const futureValue = lumpsum * Math.pow(1 + rate / 100, years);
+
+      return {
+        totalInvested: lumpsum,
+        futureValue: Math.round(futureValue),
+        wealthGained: Math.round(futureValue - lumpsum),
+      };
+    }
+  }, [sipForm, sipMode]);
+
   const formatINR = (n: number) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -79,10 +126,10 @@ export default function CalculatorPage() {
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Calculator className="h-6 w-6 text-blue-600" />
-          Risk Calculator
+          Calculators
         </h1>
         <p className="text-muted-foreground text-sm">
-          Figure out how many shares to buy and how much you could make or lose — before you enter a trade.
+          Tools to help you make smart decisions — position sizing, risk/reward analysis, and investment growth projections.
         </p>
       </div>
 
@@ -374,6 +421,184 @@ export default function CalculatorPage() {
                 If you buy at ₹500, set target at ₹520 and stop-loss at ₹490 —
                 you risk ₹10/share to make ₹20/share. That&apos;s a 1:2 ratio (good!).
                 Even if you win only half your trades, you&apos;ll still make money overall.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* SIP / Lumpsum Calculator */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <PiggyBank className="h-5 w-5 text-violet-600" />
+            How Much Will My Investment Grow?
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            See how your money can grow over time with the power of compounding.
+            Compounding means your returns earn returns — like a snowball effect!
+          </p>
+          <div className="flex gap-2 mt-2">
+            <Button
+              variant={sipMode === "sip" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSipMode("sip")}
+              className={sipMode === "sip" ? "bg-violet-600 hover:bg-violet-700" : ""}
+            >
+              Monthly SIP
+            </Button>
+            <Button
+              variant={sipMode === "lumpsum" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSipMode("lumpsum")}
+              className={sipMode === "lumpsum" ? "bg-violet-600 hover:bg-violet-700" : ""}
+            >
+              One-time Investment
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {sipMode === "sip" ? (
+              <div className="space-y-2">
+                <Label>Monthly Investment</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">
+                    ₹
+                  </span>
+                  <Input
+                    type="number"
+                    className="pl-7"
+                    value={sipForm.monthlyAmount}
+                    onChange={(e) =>
+                      setSipForm({ ...sipForm, monthlyAmount: e.target.value })
+                    }
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  How much will you invest every month?
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label>Investment Amount</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">
+                    ₹
+                  </span>
+                  <Input
+                    type="number"
+                    className="pl-7"
+                    value={sipForm.lumpsumAmount}
+                    onChange={(e) =>
+                      setSipForm({ ...sipForm, lumpsumAmount: e.target.value })
+                    }
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  How much are you investing at once?
+                </p>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label>Expected Return</Label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  step="0.5"
+                  value={sipForm.returnRate}
+                  onChange={(e) =>
+                    setSipForm({ ...sipForm, returnRate: e.target.value })
+                  }
+                />
+                <span className="absolute right-3 top-2.5 text-muted-foreground text-sm">
+                  % / year
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Equity funds average 12-15%. Debt funds average 7-8%.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label>Time Period</Label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  step="1"
+                  value={sipForm.years}
+                  onChange={(e) =>
+                    setSipForm({ ...sipForm, years: e.target.value })
+                  }
+                />
+                <span className="absolute right-3 top-2.5 text-muted-foreground text-sm">
+                  years
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Longer = more compounding. 5+ years is ideal.
+              </p>
+            </div>
+          </div>
+
+          {sipResult && (
+            <div className="rounded-xl p-5 bg-violet-50 border border-violet-200 dark:bg-violet-950/50 dark:border-violet-900 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-sm text-muted-foreground">You Invest</p>
+                  <p className="text-xl font-bold">
+                    {formatINR(sipResult.totalInvested)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">It Grows To</p>
+                  <p className="text-2xl font-bold text-violet-700 dark:text-violet-400">
+                    {formatINR(sipResult.futureValue)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Wealth Gained
+                  </p>
+                  <p className="text-xl font-bold text-emerald-600">
+                    +{formatINR(sipResult.wealthGained)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Free money from compounding!
+                  </p>
+                </div>
+              </div>
+
+              {/* Visual bar */}
+              <div className="flex h-10 rounded-xl overflow-hidden border border-violet-200 dark:border-violet-800">
+                <div
+                  className="bg-blue-400 dark:bg-blue-600 flex items-center justify-center text-sm text-white font-medium"
+                  style={{
+                    width: `${(sipResult.totalInvested / sipResult.futureValue) * 100}%`,
+                    minWidth: "80px",
+                  }}
+                >
+                  You invest
+                </div>
+                <div
+                  className="bg-emerald-400 dark:bg-emerald-600 flex items-center justify-center text-sm text-white font-medium"
+                  style={{
+                    width: `${(sipResult.wealthGained / sipResult.futureValue) * 100}%`,
+                    minWidth: "80px",
+                  }}
+                >
+                  Market gives
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!sipResult && (
+            <div className="rounded-lg p-4 bg-muted/50 border">
+              <p className="text-sm font-medium mb-2">Example</p>
+              <p className="text-sm text-muted-foreground">
+                {sipMode === "sip"
+                  ? "If you invest ₹5,000/month at 12% for 10 years: You invest ₹6,00,000 total, but it grows to about ₹11,61,695. The extra ₹5,61,695 is the power of compounding!"
+                  : "If you invest ₹1,00,000 at 12% for 10 years: Your money grows to about ₹3,10,585. You more than triple your investment!"}
               </p>
             </div>
           )}

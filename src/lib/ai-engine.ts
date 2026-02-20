@@ -293,3 +293,122 @@ Give 3-4 specific, actionable improvement tips. Be encouraging. Use simple langu
     return "Unable to generate improvement tips right now.";
   }
 }
+
+export async function generatePortfolioAdvice(context: {
+  holdings: { symbol: string; buyPrice: number; currentPrice: number; pnlPct: number; holdingDays: number }[];
+  mutualFunds: { name: string; category: string; returnPct: number; isSip: boolean }[];
+  intradayStats: { winRate: number; totalPnl: number; tradeCount: number };
+  totalPortfolioValue: number;
+}): Promise<string> {
+  const totalItems = context.holdings.length + context.mutualFunds.length;
+  if (totalItems === 0) {
+    return "Add some stock holdings or mutual funds to get personalized portfolio advice!";
+  }
+
+  const prompt = `You are a friendly investment advisor for a beginner Indian investor. Analyze their portfolio and give simple, encouraging advice.
+
+PORTFOLIO SUMMARY:
+Total Portfolio Value: Rs${context.totalPortfolioValue}
+
+STOCK HOLDINGS (${context.holdings.length} stocks):
+${context.holdings.length > 0
+  ? context.holdings.map((h) => `- ${h.symbol}: Buy Rs${h.buyPrice}, Current Rs${h.currentPrice} (${h.pnlPct > 0 ? "+" : ""}${h.pnlPct}%), held ${h.holdingDays} days`).join("\n")
+  : "No stock holdings yet."}
+
+MUTUAL FUNDS (${context.mutualFunds.length} funds):
+${context.mutualFunds.length > 0
+  ? context.mutualFunds.map((f) => `- ${f.name} (${f.category}): ${f.returnPct > 0 ? "+" : ""}${f.returnPct}% returns${f.isSip ? " [SIP active]" : ""}`).join("\n")
+  : "No mutual funds yet."}
+
+INTRADAY TRADING:
+${context.intradayStats.tradeCount > 0
+  ? `- ${context.intradayStats.tradeCount} trades, Win rate: ${context.intradayStats.winRate}%, Total P&L: Rs${context.intradayStats.totalPnl}`
+  : "No intraday trades yet."}
+
+Give 3-4 personalized tips covering:
+1. Portfolio diversification — is it balanced across stocks, MFs, and sectors?
+2. Any holdings that need attention (up a lot, down a lot, etc.)
+3. One actionable improvement for their portfolio
+4. A simple, encouraging insight
+
+Keep language very simple — the user is a beginner. Be warm and supportive.`;
+
+  try {
+    const response = await anthropic.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 512,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    return response.content[0].type === "text"
+      ? response.content[0].text
+      : "Unable to analyze portfolio right now.";
+  } catch (error) {
+    console.error("AI portfolio advice error:", error);
+    return "Unable to analyze portfolio right now. Please try again later.";
+  }
+}
+
+export async function generateHoldingAdvice(context: {
+  holding: {
+    symbol: string;
+    buyPrice: number;
+    currentPrice: number;
+    quantity: number;
+    pnlPct: number;
+    holdingDays: number;
+    notes?: string;
+  };
+  userTradeHistory: { symbol: string; side: string; netPnl: number }[];
+}): Promise<{ action: "HOLD" | "SELL" | "ADD_MORE"; reasoning: string; confidence: "HIGH" | "MEDIUM" | "LOW" }> {
+  const h = context.holding;
+  const historyForSymbol = context.userTradeHistory.filter(
+    (t) => t.symbol === h.symbol
+  );
+
+  const prompt = `You are a friendly investment advisor helping a beginner Indian investor decide what to do with a stock they own.
+
+HOLDING:
+- Stock: ${h.symbol}
+- Buy Price: Rs${h.buyPrice}
+- Current Price: Rs${h.currentPrice}
+- Quantity: ${h.quantity} shares
+- P&L: ${h.pnlPct > 0 ? "+" : ""}${h.pnlPct}%
+- Held for: ${h.holdingDays} days
+${h.notes ? `- Reason for buying: ${h.notes}` : ""}
+
+${historyForSymbol.length > 0
+  ? `Past trades on ${h.symbol}:\n${historyForSymbol.slice(0, 5).map((t) => `  ${t.side} → P&L: Rs${t.netPnl}`).join("\n")}`
+  : `No past trades on ${h.symbol}`}
+
+Respond with ONE of: HOLD, SELL, or ADD_MORE.
+Explain in 2-3 simple sentences that a beginner would understand.
+
+Return ONLY this JSON:
+{
+  "action": "HOLD" or "SELL" or "ADD_MORE",
+  "reasoning": "Your explanation here",
+  "confidence": "HIGH" or "MEDIUM" or "LOW"
+}`;
+
+  try {
+    const response = await anthropic.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 256,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const text =
+      response.content[0].type === "text" ? response.content[0].text : "";
+
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return { action: "HOLD", reasoning: "Unable to generate advice right now.", confidence: "LOW" };
+    }
+
+    return JSON.parse(jsonMatch[0]);
+  } catch (error) {
+    console.error("AI holding advice error:", error);
+    return { action: "HOLD", reasoning: "Unable to generate advice right now.", confidence: "LOW" };
+  }
+}

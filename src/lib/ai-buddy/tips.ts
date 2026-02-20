@@ -517,3 +517,204 @@ export function getDailyTip(stats: {
 
   return null;
 }
+
+// --------------- Stock Holding Tips ---------------
+
+export function getHoldingTips(holding: {
+  unrealizedPnlPct: number;
+  buyDate: string;
+  investedValue: number;
+  totalPortfolioValue?: number;
+}): BuddyTip[] {
+  const tips: BuddyTip[] = [];
+  const daysSinceBuy = Math.floor(
+    (Date.now() - new Date(holding.buyDate).getTime()) / 86400000
+  );
+  const isLongTerm = daysSinceBuy > 365;
+
+  if (holding.unrealizedPnlPct >= 100) {
+    tips.push({
+      id: "holding-doubled",
+      severity: "success",
+      message:
+        "This stock has doubled! You might want to sell half and keep the rest risk-free.",
+    });
+  } else if (holding.unrealizedPnlPct >= 50) {
+    tips.push({
+      id: "holding-up-big",
+      severity: "success",
+      message: `Up ${Math.round(holding.unrealizedPnlPct)}%! Consider booking some profits.`,
+    });
+  }
+
+  if (holding.unrealizedPnlPct <= -30) {
+    tips.push({
+      id: "holding-down-big",
+      severity: "danger",
+      message:
+        "Down more than 30%. Is your original reason for buying still valid? Consider cutting losses.",
+    });
+  }
+
+  if (isLongTerm && holding.unrealizedPnlPct > 0) {
+    tips.push({
+      id: "holding-ltcg",
+      severity: "info",
+      message:
+        "Held for over 1 year — gains are taxed at just 10% (LTCG) instead of 15% (STCG). Good patience!",
+    });
+  } else if (!isLongTerm && holding.unrealizedPnlPct > 15 && daysSinceBuy > 30) {
+    const daysToLTCG = 365 - daysSinceBuy;
+    tips.push({
+      id: "holding-stcg-warning",
+      severity: "info",
+      message: `Selling now means 15% tax on gains (STCG). Hold ${daysToLTCG} more days for the lower 10% tax rate.`,
+    });
+  }
+
+  if (
+    holding.totalPortfolioValue &&
+    holding.totalPortfolioValue > 0 &&
+    holding.investedValue / holding.totalPortfolioValue > 0.3
+  ) {
+    tips.push({
+      id: "holding-concentrated",
+      severity: "warning",
+      message: `This is ${Math.round((holding.investedValue / holding.totalPortfolioValue) * 100)}% of your portfolio. Diversifying reduces risk.`,
+    });
+  }
+
+  return tips;
+}
+
+export function getHoldingFormTips(params: {
+  quantity: string;
+  buyPrice: string;
+  context: { capitalAmount: number; holdingCount: number } | null;
+}): BuddyTip[] {
+  const tips: BuddyTip[] = [];
+  const qty = parseFloat(params.quantity) || 0;
+  const price = parseFloat(params.buyPrice) || 0;
+  const ctx = params.context;
+
+  if (ctx && price > 0 && qty > 0) {
+    const value = price * qty;
+    const pct = (value / ctx.capitalAmount) * 100;
+    if (ctx.capitalAmount > 0 && pct > 20) {
+      tips.push({
+        id: "holding-form-large",
+        severity: "warning",
+        message: `This is ${Math.round(pct)}% of your capital (${fmt(value)}). Diversifying across multiple stocks reduces risk.`,
+      });
+    }
+  }
+
+  if (ctx && ctx.holdingCount >= 10) {
+    tips.push({
+      id: "holding-form-many",
+      severity: "info",
+      message:
+        "You have 10+ holdings already. Make sure you can track all of them effectively.",
+    });
+  }
+
+  return tips;
+}
+
+// --------------- Mutual Fund Tips ---------------
+
+export function getMfTips(fund: {
+  unrealizedPnlPct: number;
+  category: string | null;
+  isSip: boolean;
+  createdAt: string;
+}): BuddyTip[] {
+  const tips: BuddyTip[] = [];
+  const daysSinceInvest = Math.floor(
+    (Date.now() - new Date(fund.createdAt).getTime()) / 86400000
+  );
+  const isEquity = fund.category
+    ? ["equity", "elss", "index fund"].includes(fund.category.toLowerCase())
+    : false;
+
+  if (fund.unrealizedPnlPct <= -10 && isEquity) {
+    tips.push({
+      id: "mf-equity-down",
+      severity: "info",
+      message:
+        "Down 10%. Equity funds fluctuate — if your goals are 3+ years away, stay invested.",
+    });
+  }
+
+  if (fund.unrealizedPnlPct >= 30) {
+    tips.push({
+      id: "mf-up-big",
+      severity: "success",
+      message:
+        "Great returns! If this was for a short-term goal, consider redeeming.",
+    });
+  }
+
+  if (
+    fund.category?.toLowerCase() === "elss" &&
+    daysSinceInvest > 365 * 3
+  ) {
+    tips.push({
+      id: "mf-elss-unlocked",
+      severity: "info",
+      message:
+        "Your ELSS lock-in period (3 years) is over. You can redeem if needed.",
+    });
+  }
+
+  if (fund.isSip) {
+    tips.push({
+      id: "mf-sip-active",
+      severity: "success",
+      message:
+        "SIP is great — you're averaging out your purchase price automatically.",
+    });
+  } else if (isEquity) {
+    tips.push({
+      id: "mf-no-sip",
+      severity: "info",
+      message:
+        "Consider starting a SIP. Investing a fixed amount monthly reduces timing risk.",
+    });
+  }
+
+  return tips;
+}
+
+export function getMfFormTips(params: {
+  investedAmount: string;
+  context: { totalMfInvested: number; mfCount: number } | null;
+}): BuddyTip[] {
+  const tips: BuddyTip[] = [];
+  const amount = parseFloat(params.investedAmount) || 0;
+  const ctx = params.context;
+
+  if (ctx && ctx.mfCount === 0) {
+    tips.push({
+      id: "mf-form-first",
+      severity: "success",
+      message:
+        "Great first step! Mutual funds are a good way to start investing.",
+    });
+  }
+
+  if (ctx && amount > 0 && ctx.totalMfInvested > 0) {
+    const totalAfter = ctx.totalMfInvested + amount;
+    const pct = (amount / totalAfter) * 100;
+    if (pct > 50) {
+      tips.push({
+        id: "mf-form-concentrated",
+        severity: "warning",
+        message:
+          "Putting too much in one fund is risky. Spread across 3-4 funds.",
+      });
+    }
+  }
+
+  return tips;
+}

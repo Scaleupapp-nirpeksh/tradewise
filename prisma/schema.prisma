@@ -47,6 +47,8 @@ model User {
   alertLogs        AlertLog[]
   goals            TradingGoal[]
   positionAdvice   AiPositionAdvice[]
+  stockHoldings    StockHolding[]
+  mutualFunds      MutualFund[]
 }
 
 model Session {
@@ -248,12 +250,15 @@ enum GoalType {
   WIN_RATE
   MAX_LOSS_PER_TRADE
   TOTAL_TRADES
+  PORTFOLIO_VALUE
+  MONTHLY_INVESTMENT
 }
 
 enum GoalPeriod {
   DAILY
   WEEKLY
   MONTHLY
+  YEARLY
 }
 
 model TradingGoal {
@@ -272,6 +277,62 @@ model TradingGoal {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, period])
+}
+
+// Stock holdings (delivery / long-term)
+model StockHolding {
+  id            String   @id @default(cuid())
+  userId        String
+  symbol        String
+  exchange      String   @default("NSE")
+  quantity      Int
+  buyPrice      Float
+  buyDate       DateTime
+  currentPrice  Float    @default(0)
+  notes         String?  @db.Text
+  brokerOrderId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, symbol])
+  @@index([userId, createdAt])
+}
+
+// Mutual fund investments
+model MutualFund {
+  id             String   @id @default(cuid())
+  userId         String
+  schemeName     String
+  schemeCode     String
+  folioNumber    String?
+  units          Float
+  investedAmount Float
+  currentNav     Float    @default(0)
+  category       String?
+  isSip          Boolean  @default(false)
+  sipAmount      Float?
+  sipDate        Int?
+  notes          String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, schemeCode])
+  @@index([userId, createdAt])
+}
+
+// NAV cache for mutual funds
+model NavCache {
+  id         String   @id @default(cuid())
+  schemeCode String   @unique
+  nav        Float
+  date       String
+  updatedAt  DateTime @updatedAt
+
+  @@index([schemeCode])
 }
 
 // AI position advice (HOLD/SELL/BUY_MORE per position)

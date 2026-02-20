@@ -19,6 +19,13 @@ import {
   LineChart,
   Line,
 } from "recharts";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import { PortfolioAnalytics } from "@/components/analytics/portfolio-analytics";
 
 interface Trade {
   id: string;
@@ -45,42 +52,6 @@ export default function AnalyticsPage() {
       })
       .catch(() => setLoading(false));
   }, []);
-
-  if (loading) {
-    return (
-      <div className="text-center py-12 text-muted-foreground">
-        Loading analytics...
-      </div>
-    );
-  }
-
-  if (trades.length === 0) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-blue-600" />
-            Analytics
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            Your trading performance at a glance — see what&apos;s working and what needs improvement.
-          </p>
-        </div>
-        <Card>
-          <CardContent className="text-center py-12">
-            <BarChart3 className="h-12 w-12 text-blue-300 mx-auto mb-4" />
-            <h3 className="font-semibold text-lg mb-2">
-              No data to analyze yet
-            </h3>
-            <p className="text-muted-foreground">
-              Close some trades to see your analytics here. We&apos;ll show you your win rate,
-              P&L trends, and which strategies work best.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   const winners = trades.filter((t) => (t.netPnl || 0) > 0);
   const losers = trades.filter((t) => (t.netPnl || 0) < 0);
@@ -155,9 +126,34 @@ export default function AnalyticsPage() {
         </p>
       </div>
 
-      <AnalyticsCoaching trades={trades} />
+      <Tabs defaultValue="intraday">
+        <TabsList>
+          <TabsTrigger value="intraday">Intraday</TabsTrigger>
+          <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
+        </TabsList>
 
-      {/* Summary Cards - Row 1 */}
+        <TabsContent value="intraday" className="mt-4 space-y-6">
+          {loading ? (
+            <div className="text-center py-12 text-muted-foreground">
+              Loading analytics...
+            </div>
+          ) : trades.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <BarChart3 className="h-12 w-12 text-blue-300 mx-auto mb-4" />
+                <h3 className="font-semibold text-lg mb-2">
+                  No data to analyze yet
+                </h3>
+                <p className="text-muted-foreground">
+                  Close some trades to see your intraday analytics here.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <AnalyticsCoaching trades={trades} />
+
+              {/* Summary Cards - Row 1 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className={totalPnl >= 0 ? "border-emerald-200 dark:border-emerald-900" : "border-red-200 dark:border-red-900"}>
           <CardContent className="pt-6">
@@ -365,6 +361,14 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
       </div>
+            </>
+          )}
+        </TabsContent>
+
+        <TabsContent value="portfolio" className="mt-4">
+          <PortfolioAnalytics />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
