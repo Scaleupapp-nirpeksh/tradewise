@@ -75,7 +75,7 @@ export function AiSuggestionCard({
           <span className="font-bold text-lg">{suggestion.symbol}</span>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 text-sm">
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-sm">
           <div className="bg-gray-50 rounded-lg p-2 text-center">
             <p className="text-muted-foreground text-xs">Entry</p>
             <p className="font-semibold">{formatINR(suggestion.suggestedEntry)}</p>

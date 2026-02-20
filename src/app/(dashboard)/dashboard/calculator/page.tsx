@@ -96,7 +96,7 @@ export default function CalculatorPage() {
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Your Total Capital</Label>
               <div className="relative">
@@ -132,7 +132,7 @@ export default function CalculatorPage() {
               <p className="text-xs text-muted-foreground">Most pros risk 1-2% per trade. Higher = more risk.</p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Entry Price</Label>
               <div className="relative">
@@ -175,7 +175,7 @@ export default function CalculatorPage() {
 
           {posResult && (
             <div className="rounded-xl p-5 bg-blue-50 border border-blue-200 dark:bg-blue-950/50 dark:border-blue-900 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">
                     You should buy
@@ -231,7 +231,7 @@ export default function CalculatorPage() {
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Entry Price</Label>
               <div className="relative">
@@ -262,7 +262,7 @@ export default function CalculatorPage() {
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Target Price</Label>
               <div className="relative">
@@ -349,7 +349,7 @@ export default function CalculatorPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="rounded-lg p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-900 text-center">
                   <p className="text-sm text-muted-foreground">If price hits stop-loss</p>
                   <p className="font-bold text-red-600 dark:text-red-400 text-xl">

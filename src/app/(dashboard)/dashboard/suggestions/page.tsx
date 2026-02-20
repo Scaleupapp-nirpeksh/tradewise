@@ -277,7 +277,7 @@ export default function SuggestionsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Brain className="h-6 w-6 text-violet-600" />
@@ -287,7 +287,7 @@ export default function SuggestionsPage() {
             Trade ideas powered by AI analysis of market data.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"

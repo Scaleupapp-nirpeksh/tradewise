@@ -157,7 +157,7 @@ export function OpenPositions() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <CardTitle className="text-base">Open Positions</CardTitle>
             <p className="text-xs text-muted-foreground mt-1">
@@ -212,9 +212,9 @@ export function OpenPositions() {
           return (
             <div
               key={pos.id}
-              className="p-3 rounded-lg border bg-white hover:bg-gray-50 transition-colors"
+              className="p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
             >
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 {/* Left: Symbol + details */}
                 <div className="flex items-center gap-3">
                   <div
@@ -282,7 +282,7 @@ export function OpenPositions() {
                 </div>
 
                 {/* Right: Price + P&L + AI button */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 self-end sm:self-auto">
                   <div className="text-right">
                     <p className="text-sm text-muted-foreground">
                       {formatINR(pos.currentPrice)}
@@ -336,14 +336,14 @@ export function OpenPositions() {
 
               {/* AI Advice reasoning */}
               {posAdvice && (
-                <div className="mt-2 ml-11 p-2 rounded bg-violet-50 border border-violet-100 text-xs text-violet-800">
+                <div className="mt-2 sm:ml-11 p-2 rounded bg-violet-50 dark:bg-violet-950/50 border border-violet-100 dark:border-violet-900 text-xs text-violet-800 dark:text-violet-300">
                   <span className="font-medium">AI: </span>
                   {posAdvice.reasoning}
                 </div>
               )}
 
               {/* AI Buddy position tips */}
-              <div className="mt-2 ml-11">
+              <div className="mt-2 sm:ml-11">
                 <PositionTips
                   unrealizedPnlPct={pos.unrealizedPnlPct}
                   stopLossPrice={pos.stopLossPrice}
@@ -369,7 +369,7 @@ export function OpenPositions() {
           </DialogHeader>
           {closingTrade && (
             <div className="space-y-4 py-2">
-              <div className="grid grid-cols-3 gap-3 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                 <div>
                   <p className="text-muted-foreground">Side</p>
                   <p className="font-medium">{closingTrade.side} x{closingTrade.quantity}</p>

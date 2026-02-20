@@ -143,7 +143,7 @@ export default function NewTradePage() {
             <CardTitle className="text-base">What did you trade?</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="symbol">Stock</Label>
                 <StockSearch
@@ -217,7 +217,7 @@ export default function NewTradePage() {
             <CardTitle className="text-base">Price Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="quantity">Quantity</Label>
                 <Input
@@ -316,7 +316,7 @@ export default function NewTradePage() {
             )}
 
             {/* Target & Stop Loss */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="targetPrice" className="flex items-center gap-1.5">
                   <Target className="h-3.5 w-3.5 text-emerald-600" />
@@ -408,7 +408,7 @@ export default function NewTradePage() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="entryTime">Entry Time</Label>
                 <Input

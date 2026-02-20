@@ -42,7 +42,7 @@ export function RecentTrades({ trades }: { trades: TradeWithStrategy[] }) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-row items-center justify-between gap-2">
         <CardTitle className="text-lg">Recent Trades</CardTitle>
         <Link href="/dashboard/trades">
           <Button variant="ghost" size="sm">

@@ -60,7 +60,7 @@ export function MobileNav() {
                 {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-0">
+            <SheetContent side="left" className="w-[80vw] sm:w-72 p-0">
               <SheetTitle className="sr-only">Navigation</SheetTitle>
               <div className="flex items-center gap-2 px-6 py-5 border-b">
                 <div className="h-7 w-7 rounded-lg bg-linear-to-br from-emerald-500 to-teal-600 flex items-center justify-center">

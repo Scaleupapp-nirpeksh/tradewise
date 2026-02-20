@@ -158,7 +158,7 @@ export default function TradesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">My Trades</h1>
           <p className="text-muted-foreground text-sm">
@@ -166,7 +166,7 @@ export default function TradesPage() {
           </p>
         </div>
         <Link href="/dashboard/trades/new">
-          <Button className="bg-emerald-600 hover:bg-emerald-700">
+          <Button className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             Add Trade
           </Button>
@@ -174,11 +174,11 @@ export default function TradesPage() {
       </div>
 
       {/* Summary Bar */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-muted-foreground" />
           <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-full sm:w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -229,12 +229,12 @@ export default function TradesPage() {
                   <TableRow>
                     <TableHead>Stock</TableHead>
                     <TableHead>Side</TableHead>
-                    <TableHead className="text-right">Qty</TableHead>
-                    <TableHead className="text-right">Entry</TableHead>
-                    <TableHead className="text-right">Exit</TableHead>
+                    <TableHead className="text-right hidden sm:table-cell">Qty</TableHead>
+                    <TableHead className="text-right hidden md:table-cell">Entry</TableHead>
+                    <TableHead className="text-right hidden md:table-cell">Exit</TableHead>
                     <TableHead className="text-right">Net P&L</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Emotion</TableHead>
+                    <TableHead className="hidden lg:table-cell">Duration</TableHead>
+                    <TableHead className="hidden lg:table-cell">Emotion</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead></TableHead>
                   </TableRow>
@@ -273,13 +273,13 @@ export default function TradesPage() {
                               {trade.side}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right hidden sm:table-cell">
                             {trade.quantity}
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right hidden md:table-cell">
                             {formatINR(trade.entryPrice)}
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right hidden md:table-cell">
                             {trade.exitPrice
                               ? formatINR(trade.exitPrice)
                               : "—"}
@@ -307,10 +307,10 @@ export default function TradesPage() {
                               "—"
                             )}
                           </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
+                          <TableCell className="text-sm text-muted-foreground hidden lg:table-cell">
                             {formatDuration(trade.entryTime, trade.exitTime)}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="hidden lg:table-cell">
                             {trade.emotionTag ? (
                               <Badge className={EMOTION_COLORS[trade.emotionTag] || ""}>
                                 {EMOTION_LABELS[trade.emotionTag] || trade.emotionTag}
@@ -369,7 +369,7 @@ export default function TradesPage() {
                         {expandedTrade === trade.id && trade.status === "CLOSED" && (
                           <TableRow key={`${trade.id}-details`}>
                             <TableCell colSpan={10} className="bg-muted/30 p-4">
-                              <div className="max-w-lg space-y-4">
+                              <div className="max-w-full sm:max-w-lg space-y-4">
                                 {/* Holding duration insight */}
                                 {trade.entryTime && trade.exitTime && (
                                   <p className="text-sm text-muted-foreground">
